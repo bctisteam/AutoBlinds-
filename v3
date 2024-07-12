@@ -1,0 +1,161 @@
+import RPi.GPIO as GPIO
+import time
+from time import sleep
+
+GPIO.setmode(GPIO.BOARD)
+GPIO.setwarnings(False)
+
+LDR = 3
+MotA = 16
+MotB = 18
+MotE = 22
+Hall = 5
+t = 3
+GPIO.setup(MotA,GPIO.OUT)
+GPIO.setup(MotB,GPIO.OUT)
+GPIO.setup(MotE,GPIO.OUT)
+GPIO.setup(LDR,GPIO.IN)
+GPIO.setup(Hall,GPIO.IN)
+
+def Restart():
+    print("Restart")
+    GPIO.output(MotA,GPIO.HIGH)
+    GPIO.output(MotB,GPIO.LOW)
+    GPIO.output(MotE,GPIO.HIGH)
+    time.sleep(10)
+    sleep(1)
+
+def LastPosition():
+    LastPosition = diff*1000
+    return LastPosition
+
+def StorePositionValue(LastPosition):
+    filename = "latest_Position.txt"
+    with open(filename, "w") as file:
+        file.write(str(LastPosition))
+    print(f'Latest Position {LastPosition} stored in {filename}')
+
+def Semi():
+    print("Semi")
+    GPIO.output(MotA,GPIO.LOW)
+    GPIO.output(MotB,GPIO.HIGH)
+    GPIO.output(MotE,GPIO.HIGH)
+    time.sleep(2)
+    sleep(t)
+
+def UPsemi():
+    print("UPsemi")
+    GPIO.output(MotA,GPIO.HIGH)
+    GPIO.output(MotB,GPIO.LOW)
+    GPIO.output(MotE,GPIO.HIGH)
+    time.sleep(2)
+    sleep(t)
+
+def Half():
+    print("Half")
+    GPIO.output(MotA,GPIO.LOW)
+    GPIO.output(MotB,GPIO.HIGH)
+    GPIO.output(MotE,GPIO.HIGH)
+    time.sleep(2)
+    sleep(t)
+
+def UPhalf():
+    print("UPhalf")
+    GPIO.output(MotA,GPIO.HIGH)
+    GPIO.output(MotB,GPIO.LOW)
+    GPIO.output(MotE,GPIO.HIGH)
+    time.sleep(4)
+    sleep(t)
+
+def ThreeQ():
+    print("ThreeQ")
+    GPIO.output(MotA,GPIO.LOW)
+    GPIO.output(MotB,GPIO.HIGH)
+    GPIO.output(MotE,GPIO.HIGH)
+    time.sleep(2)
+    sleep(t)
+
+def UPthreeq():
+    print("UPthreeq")
+    GPIO.output(MotA,GPIO.HIGH)
+    GPIO.output(MotB,GPIO.LOW)
+    GPIO.output(MotE,GPIO.HIGH)
+    time.sleep(4)
+    sleep(t)
+
+def Full():
+    print("Full")
+    GPIO.output(MotA,GPIO.LOW)
+    GPIO.output(MotB,GPIO.HIGH)
+    GPIO.output(MotE,GPIO.HIGH)
+    time.sleep(3)
+    sleep(t)
+    
+def UPfull():
+    print("UPfull")
+    GPIO.output(MotA,GPIO.HIGH)
+    GPIO.output(MotB,GPIO.LOW)
+    GPIO.output(MotE,GPIO.HIGH)
+    time.sleep(8)
+    sleep(t)
+
+def OFF():
+    print("magnet detected")
+    print("OFF")
+    GPIO.output(MotE,GPIO.LOW)
+    time.sleep(5)
+
+def ON():
+    print("magnet NOT detected")
+    
+while True:
+    GPIO.setup(LDR, GPIO.OUT)
+    GPIO.output(LDR, GPIO.LOW)
+    time.sleep(0.1)
+    
+    GPIO.setup(LDR, GPIO.IN)
+    currentTime = time.time()
+    diff = 0
+    
+    while(GPIO.input(LDR) == GPIO.LOW):
+        diff = time.time() - currentTime
+        
+    print(diff * 1000)
+    time.sleep(1)
+    
+    if GPIO.input(Hall)== 0:
+            OFF()
+        
+    elif GPIO.input(Hall)== 1:
+            ON()
+            
+    try:
+        if diff*1000 <=61.5:
+            if diff*1000 <= 15:
+                Full()
+            elif diff*1000 <= 30 and diff*1000 > 15:
+                ThreeQ()
+            elif diff*1000 <= 45 and diff*1000 > 30:
+                Half()
+            elif diff*1000 <= 61.5 and diff*1000 > 45:
+                Semi()        
+        
+        else:
+            if diff*1000 >= 61.5 and diff*1000 < 70:
+                UPsemi()
+            elif diff*1000 >= 70 and diff*1000 < 80:
+                UPhalf()
+            elif diff*1000 >= 80 and diff*1000 < 90:
+                UPthreeq()
+            elif diff*1000 >= 90 and diff*1000 < 100:
+                UPfull()
+            elif diff*1000 >= 100:
+                UPfull()
+                    
+                         
+    except KeyboardInterrupt:
+            GPIO.output(MotA,GPIO.LOW)
+            GPIO.output(MotB,GPIO.LOW)
+            GPIO.output(MotE,GPIO.LOW)
+            GPIO.cleanup()
+            break
